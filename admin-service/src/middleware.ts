@@ -21,10 +21,11 @@ export const isAth=async(req:AuthenticatedRequest,res:Response,next:NextFunction
 {
   try {
    const token=req.headers.token as string;
+  const Cookiestoken: string | undefined = req.cookies?.token;
    if(!token) throw new Error("token not found")
    const {data}=await axios.get(`http://localhost:8000/api/v1/users/profile`,{
    headers:{
-    token
+    token:token||Cookiestoken
    }
 }) 
   req.user=data.user

@@ -5,7 +5,12 @@ export interface Iuser extends Document{
     phone:string,
     password:string,
     role:string,
-    playlist:string[]
+    playlist:string[],
+    isVerified:boolean,
+    verifyAccountToken:string,
+    VerifyAccountTokenExpiry:Date,
+    verifypasswordToken:string,
+    verifyPasswordTokenExoiry:Date
 }
 
 const UserSchema:Schema<Iuser>=new Schema({
@@ -30,13 +35,28 @@ password:{
 role:{
     type:String,
     required:[true,"role is required"],
-    enum:["user","admin"]
+    enum:["user","admin"],
+    default:"user"
 },
 playlist:[
     {
         type:String,
-        required:true
+        
     }
-]
+],
+isVerified:{
+    type:Boolean,
+    required:false,
+    default:false
+},
+verifyAccountToken:{
+    type:String,
+},
+VerifyAccountTokenExpiry:{
+    type:Date,
+    
+},
+verifypasswordToken:String,
+verifyPasswordTokenExoiry:Date
 },{timestamps:true})
 export const User=mongoose.model("User",UserSchema)

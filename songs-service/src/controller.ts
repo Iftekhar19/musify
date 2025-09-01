@@ -137,3 +137,31 @@ export const song = asyncHandler(async (req: Request, res: Response) => {
     song: song[0],
   });
 });
+export const getPlayList=asyncHandler(async (req:Request,res:Response)=> {
+  const {idArray}=req.body;
+  if(!Array.isArray(idArray))
+  {
+    return res.status(400).json({
+      message:"Invalid ids",
+      success:false
+    })
+  }
+  if(idArray.length===0)
+  {
+      return res.status(400).json({
+      message:"No ids to fetch playlist",
+      success:false
+    })
+  }
+const rows = await sql`
+    SELECT *
+    FROM songs
+    WHERE id = ANY(${idArray})
+  `;
+ 
+  return res.status(200).json({
+    message:"fetched successfully",
+    success:true,
+    playList:rows
+  })
+})

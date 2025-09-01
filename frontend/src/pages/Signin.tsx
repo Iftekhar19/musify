@@ -1,31 +1,75 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, Lock, Sun, Moon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthProvider";
+import type { ApiResponse } from "@/types/ApiResponse";
+import { SigninSchema } from "@/validationSchema/Schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import type { AxiosError } from "axios";
+import axios from "axios";
+import { Lock, Mail } from "lucide-react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { z } from "zod";
+
+type SigninFormData = z.infer<typeof SigninSchema>;
 
 const Signin = () => {
-  const [darkMode, setDarkMode] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const navigate=useNavigate()
+  const {user,setUser} =useAuth()
+  // react-hook-form setup
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SigninFormData>({
+    resolver: zodResolver(SigninSchema),
+  });
 
   // Apply/remove dark mode class on <html>
   useEffect(() => {
+    const darkMode = localStorage.getItem("theme") == "dark";
     if (darkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }, [darkMode]);
+  }, []);
+  useEffect(()=>
+  {
+   const storedUser = localStorage.getItem("authUser");
+   if(storedUser)
+   {
+    navigate('/dashboard')
+   }
+   
+  },[user])
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-    }, 2000);
+  const onSubmit = async (userData: SigninFormData) => {
+    console.log("✅ Signin Data:", userData);
+   try {
+      const { data } = await axios.post(
+        `http://localhost:8000/api/v1/users/signin`,
+        {
+         ...userData
+        }
+      );
+       setUser(data.user);
+      localStorage.setItem("authUser", JSON.stringify(data.user));
+      toast.success("Login successfully",{
+        position:'top-right'
+      })
+   } catch (error) {
+    const axiosError = error as AxiosError<ApiResponse>
+    toast.error(axiosError.response?.data?.message||"Unexpected error",{
+      position:"top-right"
+    })
+    console.log(axiosError.response?.data?.message)
+   }
+    // fake delay to simulate login
   };
 
   return (
@@ -33,22 +77,11 @@ const Signin = () => {
       <div className="w-full max-w-sm">
         <Card className="shadow-xl border rounded-2xl">
           <CardHeader className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-semibold">Sign In</CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setDarkMode(!darkMode)}
-            >
-              {darkMode ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
+            <CardTitle className="text-2xl font-semibold text-center w-full">Sign In</CardTitle>
           </CardHeader>
 
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -59,9 +92,12 @@ const Signin = () => {
                     type="email"
                     placeholder="you@example.com"
                     className="pl-10"
-                    required
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm">{errors.email.message}</p>
+                )}
               </div>
 
               {/* Password */}
@@ -74,29 +110,36 @@ const Signin = () => {
                     type="password"
                     placeholder="••••••••"
                     className="pl-10"
-                    required
+                    {...register("password")}
                   />
                 </div>
+                {errors.password && (
+                  <p className="text-red-500 text-sm">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               {/* Submit */}
               <Button
                 type="submit"
                 className="w-full rounded-xl"
-                disabled={loading}
+                disabled={isSubmitting}
               >
-                {loading ? "Signing in..." : "Sign In"}
+                {isSubmitting ? "Signing in..." : "Sign In"}
               </Button>
 
               {/* Links */}
               <div className="flex justify-between text-sm">
-                <Link to={'/forgot-password'} className="px-0 underline font-semibold">
+                <Link
+                  to={"/forgot-password"}
+                  className="px-0 underline font-semibold"
+                >
                   Forgot password?
                 </Link>
-                <Link to={'/signup'} className="px-0 underline font-semibold">
-                 Create account
+                <Link to={"/signup"} className="px-0 underline font-semibold">
+                  Create account
                 </Link>
-              
               </div>
             </form>
           </CardContent>

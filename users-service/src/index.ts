@@ -9,6 +9,6 @@ app.use(cors())
 const PORT=process.env.PORT||8000
 app.use(express.json())
 app.use("/api/v1/users",route)
-app.listen(8000,()=>{console.log(`Server is running on port: ${PORT}`)
+app.listen(8000,()=>{console.log(`Server is running on port: ${PORT}`) 
 dbConnect()
 }) 
