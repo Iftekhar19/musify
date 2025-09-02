@@ -79,11 +79,13 @@ export const loginUser=asyncHandler(async(req,res)=>
     const token=await jwt.sign({_id:user._id},process.env.JWT_SECRETKEY as string,{
         expiresIn:"7d"
     })
-    res.cookie("token",token,{
-      httpOnly:true,
-      maxAge: 7 * 24 * 60 * 60 * 1000
-    })
-    return res.status(201).json({
+ 
+    return   res.cookie("token",token,{
+      httpOnly:true, 
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      // sameSite:"none",
+      // secure:false
+    }).status(201).json({
         message:"User Logged in successfully",
         success:true,
         user,
@@ -122,7 +124,7 @@ export const addSongToPlaylist=asyncHandler(async(req:AuthenticatedRequest,res:R
 })
 export const removeSongFromPlaylist=asyncHandler(async(req:AuthenticatedRequest,res:Response)=>
 {
-  const {songId}=req.body;
+  const {id:songId}=req.params;
   if(!songId)
   {
     return res.status(400).json({

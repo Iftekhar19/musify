@@ -1,13 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAuth } from "@/context/AuthProvider";
+import { removeFromPlaylist } from "@/helper/helper";
 import { Music, PlayCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface Song {
-  id: string;
+   id: string;
   title: string;
-  duration: string;
+  thumbnail: string;
+  audio: string;
+  created_at: string;
+  description: string;
+  album_id: string;
 }
 
 interface PlaylistProps {
@@ -17,14 +23,27 @@ interface PlaylistProps {
   onDeleteSong?: (id: string) => void;
 }
 
-const PlaylistSongs = ({ title = "My Playlist", songs, onPlaySong, onDeleteSong }: PlaylistProps) => {
+const PlaylistSongs = ({ songs, onPlaySong, onDeleteSong }: PlaylistProps) => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const {setValue}=useAuth()
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async() => {
     if (deleteId) {
-      onDeleteSong?.(deleteId);
+     await removeFromPlaylist(deleteId)
+       const authUser=localStorage.getItem("authUser")
+       const parsedUser=authUser?JSON.parse(authUser):null
+       const playList=parsedUser.playlist
+       const newPlaylist=playList.filter((i:any)=>i!=deleteId)
+       parsedUser.playlist=newPlaylist
+       if (parsedUser && typeof setValue === "function") {
+           setValue(parsedUser);
+       
+       }
+      //  else{
+        
+      //  }
       setDeleteId(null);
-    }
+    } 
   };
 
   return (
@@ -55,7 +74,7 @@ const PlaylistSongs = ({ title = "My Playlist", songs, onPlaySong, onDeleteSong 
                     {/* Actions */}
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-muted-foreground">
-                        {song.duration}
+                        {/* {song.duration} */}
                       </span>
                       <Button
                         size="icon"

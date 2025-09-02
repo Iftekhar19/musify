@@ -6,7 +6,9 @@ export interface AuthenticatedRequest extends Request{
 }
 export const middleware=async(req:AuthenticatedRequest,res:Response,next:NextFunction):Promise<void>=>{
 try {
-   const token=req.headers.token as string
+   // console.log(req.cookies.token)
+   const token=req.headers.token as string||req.cookies.token as string
+   // console.log(req.cookies.token)
    if(!token)
    {
     throw new Error("Token not found")
@@ -29,6 +31,7 @@ try {
    next();
 
 } catch (error) {
+   // console.log(error?.messa)
     res.status(403).json({
       message:"Please login",
       success:false

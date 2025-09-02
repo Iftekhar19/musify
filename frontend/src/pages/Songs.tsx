@@ -1,6 +1,8 @@
 import SongList from "@/components/SongList";
 import { useState,useEffect } from "react";
 import axios from "axios";
+import { toast } from "sonner";
+
 interface Song {
   id: string;
   title: string;
@@ -14,6 +16,7 @@ interface Song {
 
 
 const SongsPage = () => {
+ 
   const [songs,setSongs]=useState<Song[]>([])
   const [loading,setLoading]=useState<boolean>(true)
   useEffect(()=>
@@ -21,9 +24,11 @@ const SongsPage = () => {
     (async()=>
     {
       try {
+        
         const {data}= await axios.get(`http://localhost:8002/api/v1/songs`)
         setSongs(data.songs)
       } catch (error) {
+        toast.error("Unable to fetch songs",{position:"top-right"})
         console.log(error)
       }
       finally{
@@ -43,9 +48,9 @@ const SongsPage = () => {
     <div className="flex flex-col gap-2">
       <h2 className="text-2xl font-bold mb-4">All Songs</h2>
       <SongList
-        songs={songs}
-        onPlaySong={(id) => console.log("Play song:", id)}
-        onLikeSong={(id) => console.log("Like song:", id)}
+      songs={songs}
+      onPlaySong={(id: string) => console.log("Play song:", id)}
+
       />
     </div>
     }

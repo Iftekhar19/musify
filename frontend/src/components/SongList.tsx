@@ -1,7 +1,9 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Heart, Music } from "lucide-react";
-
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/context/AuthProvider";
+import { Heart, Music, Play } from "lucide-react";
+import { toast } from "sonner";
+import { addToPlaylist } from "../helper/helper";
 interface Song {
   id: string;
   title: string;
@@ -15,10 +17,40 @@ interface Song {
 interface SongListProps {
   songs: Song[];
   onPlaySong?: (songId: string) => void;
-  onLikeSong?: (songId: string) => void;
+
+  // onLikeSong?: (songId: string) => void;
 }
 
-const SongList = ({ songs, onPlaySong, onLikeSong }: SongListProps) => {
+
+const SongList = ({ songs, onPlaySong }: SongListProps) => {
+  const {value,setValue}=useAuth()
+const  addPlay= async function(id:string):Promise<void> {
+  // console.log(JSON.parse(value!))
+  try {
+    const authUser=localStorage.getItem("authUser")
+    const parsedUser=authUser?(JSON.parse(authUser)):{}
+    const playList=parsedUser?.playlist
+    const isExist=playList.some((i:any)=>i==id)
+    if(isExist)
+    {
+      toast.error("Already exist",{position:"top-right"})
+    }
+    else{
+
+      await addToPlaylist(id)
+      
+      playList?.push(id)
+  
+      if (setValue) {
+        setValue(parsedUser);
+      }
+    }
+
+  } catch (error) {
+    console.log("Unable to add playlist")
+  }
+}
+
   return (
     <Card className="rounded-xl shadow-md border border-border/50 bg-white dark:bg-transparent">
       <CardContent className="divide-y px-2">
@@ -41,7 +73,7 @@ const SongList = ({ songs, onPlaySong, onLikeSong }: SongListProps) => {
               <Button
                 size="icon"
                 variant="ghost"
-                onClick={() => onLikeSong?.(song.id)}
+                onClick={()=>addPlay(song.id)}
               >
                 <Heart className="h-5 w-5" />
               </Button>

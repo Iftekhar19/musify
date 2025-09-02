@@ -5,5 +5,5 @@ router.get("/songs",getSongs)
 router.get("/albums",getAllAlbums)
 router.get("/album/:id/songs",getAllSongsOfAlbum)
 router.get("/song/:id",song)
-router.get("/playlist",getPlayList)
+router.post("/playlist",getPlayList)
 export default router

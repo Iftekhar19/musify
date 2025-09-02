@@ -54,7 +54,10 @@ const Signin = () => {
       const { data } = await axios.post(
         `http://localhost:8000/api/v1/users/signin`,
         {
-         ...userData
+         ...userData,
+         
+        },{
+          withCredentials:true
         }
       );
        setUser(data.user);
@@ -67,6 +70,7 @@ const Signin = () => {
     toast.error(axiosError.response?.data?.message||"Unexpected error",{
       position:"top-right"
     })
+    console.log(error)
     console.log(axiosError.response?.data?.message)
    }
     // fake delay to simulate login

@@ -2,6 +2,7 @@
 import axios from "axios";
 import { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode, Dispatch, SetStateAction } from "react";
+import { useLocalStorage } from "usehooks-ts";
 
 interface User {
   _id: string;
@@ -16,28 +17,52 @@ interface UserSignIn {
   email: string;
   password: string;
 }
+export interface localStorageUser {
+  _id: string;
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  playlist: number[]; 
+  role: "user" | "admin"; 
+  isVerified: boolean;
+  createdAt: string; 
+  updatedAt: string; 
+  __v: number;
+}
 
 interface AuthContextType {
   user: User | null;
-  setUser: Dispatch<SetStateAction<User | null>>; // 👈 added setUser
+  setUser: Dispatch<SetStateAction<User | null>>; 
   loading: boolean;
   signout: () => void;
   signin: ({ email, password }: UserSignIn) => Promise<void>;
+  setValue?:(value:localStorageUser|null)=>void;
+  value?:localStorageUser;
 }
 
-// 1️⃣ Create Context
+// Create Context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// 2️⃣ AuthProvider Component
+//  AuthProvider Component
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const authUser = localStorage.getItem("authUser");
+  console.log(JSON.parse(authUser!))
+  const parsedUser = authUser ? (JSON.parse(authUser)) : {};
+  const [value, setValue, removeValue] = useLocalStorage(
+    "authUser",
+    parsedUser
+  );
 
   // Load user from localStorage on mount
   useEffect(() => {
     const storedUser = localStorage.getItem("authUser");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      setUser(JSON.parse(storedUser))
+    
+      
     }
     setLoading(false);
   }, []);
@@ -63,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loading, signout, signin }}>
+    <AuthContext.Provider value={{ user, setUser, loading, signout, signin,value,setValue }}>
       {children}
     </AuthContext.Provider>
   );

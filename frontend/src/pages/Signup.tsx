@@ -9,12 +9,18 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios, { AxiosError } from "axios";
+import type { ApiResponse } from "@/types/ApiResponse";
+import { toast } from "sonner";
 
 // ✅ Zod Schema
 const signupSchema = z
   .object({
     name: z.string().min(3, "Username must be at least 3 characters"),
     email: z.string().email("Invalid email address"),
+    phone: z
+      .string()
+      .min(10, "Phone number is required and must be at least 10 digits"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
   })
@@ -61,8 +67,23 @@ const Signup = () => {
 
   const onSubmit = async (data: SignupFormData) => {
     console.log("Signup data:", data);
-    // TODO: call API here
-    // Example: await signup(data);
+    try {
+      const res = await axios.post(
+        "http://localhost:8000/api/v1/users/signup",
+        {
+          name: data.name,
+          password: data.password,
+          phone: data.phone,
+          email: data.email,
+          role: "user",
+        }
+      );
+      toast.success(res?.data?.message);
+      navigate("/signin");
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse>;
+      toast.error(axiosError.response?.data?.message || "Unexpected error");
+    }
   };
 
   return (
@@ -77,7 +98,9 @@ const Signup = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {/* Username */}
               <div className="space-y-2">
-                <Label htmlFor="username">Full Name</Label>
+                <Label htmlFor="username">
+                  Full Name <span className="text-red-500">*</span>
+                </Label>
                 <div className="relative">
                   <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                   <Input
@@ -89,15 +112,35 @@ const Signup = () => {
                   />
                 </div>
                 {errors.name && (
-                  <p className="text-red-500 text-sm">
-                    {errors.name.message}
-                  </p>
+                  <p className="text-red-500 text-sm">{errors.name.message}</p>
+                )}
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="phone">
+                  Phone <span className="text-red-500">*</span>
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                  <Input
+                    id="phone"
+                    type="number"
+                    placeholder="9128384934"
+                    className="pl-10"
+                    {...register("phone")}
+                  />
+                </div>
+                {errors.phone && (
+                  <p className="text-red-500 text-sm">{errors.phone.message}</p>
                 )}
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">
+                  Email <span className="text-red-500">*</span>
+                </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                   <Input
@@ -115,7 +158,9 @@ const Signup = () => {
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">
+                  Password <span className="text-red-500">*</span>
+                </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                   <Input
@@ -146,7 +191,9 @@ const Signup = () => {
 
               {/* Confirm Password */}
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword">
+                  Confirm Password <span className="text-red-500">*</span>
+                </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
                   <Input
@@ -158,9 +205,7 @@ const Signup = () => {
                   />
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute right-3 top-2.5 text-muted-foreground"
                   >
                     {showConfirmPassword ? (

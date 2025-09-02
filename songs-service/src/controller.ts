@@ -139,6 +139,7 @@ export const song = asyncHandler(async (req: Request, res: Response) => {
 });
 export const getPlayList=asyncHandler(async (req:Request,res:Response)=> {
   const {idArray}=req.body;
+  // console.log(typeof idArray)
   if(!Array.isArray(idArray))
   {
     return res.status(400).json({
@@ -148,9 +149,10 @@ export const getPlayList=asyncHandler(async (req:Request,res:Response)=> {
   }
   if(idArray.length===0)
   {
-      return res.status(400).json({
+      return res.status(200).json({
       message:"No ids to fetch playlist",
-      success:false
+      success:true,
+      playList:[]
     })
   }
 const rows = await sql`
