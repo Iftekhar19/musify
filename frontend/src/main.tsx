@@ -17,6 +17,9 @@ import { AuthProvider } from "./context/AuthProvider.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { Toaster } from "@/components/ui/sonner"
 import React from "react";
+import VerifyAccount from "./pages/VerifyAccount.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import ResetPassword from "./pages/ResetPassword.tsx";
 
 const router = createBrowserRouter([
   {
@@ -27,8 +30,43 @@ const router = createBrowserRouter([
   {
     path: "/signin",
     element: (
+        
+        
+          <Signin />
+       
+ 
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/verify-account",
+    element: (
+       
+        
+          <VerifyAccount />
+       
+ 
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/forgot-password",
+    element: (
+        
+        
+          <ForgotPassword />
+       
+ 
+    ),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/reset-password",
+    element: (
      
-        <Signin />
+
+         <ResetPassword />
+  
  
     ),
     errorElement: <ErrorPage />,
@@ -46,7 +84,7 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <DashboardLayout />
-      </ProtectedRoute>
+     </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
     children: [

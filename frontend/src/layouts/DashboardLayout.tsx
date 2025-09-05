@@ -7,10 +7,12 @@ import { Outlet } from "react-router-dom";
 
 const DashboardLayout = () => {
     const [open,setOpen]=useState<boolean>(false)
+
     const onOpenChange=()=>
     {
         setOpen(!open)
     }
+
   return (
     <div className="h-[100dvh] max-w-[1440px] mx-auto w-full flex flex-col">
       {/* navbar */}

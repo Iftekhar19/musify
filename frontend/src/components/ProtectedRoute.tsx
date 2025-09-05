@@ -1,3 +1,4 @@
+import { useAuth } from "@/context/AuthProvider";
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 interface RouteChildren{
@@ -5,9 +6,9 @@ interface RouteChildren{
 }
 const ProtectedRoute = ({children}:RouteChildren) => {
   const location = useLocation();
-  const authUser = localStorage.getItem("authUser");
-
-  if (!authUser) {
+ const {value}=useAuth()
+  console.log("From protectedRoute-->",value)
+  if (!value ) {
     // Redirect to signin and keep track of where user was going
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
@@ -19,3 +20,7 @@ const ProtectedRoute = ({children}:RouteChildren) => {
 };
 
 export default ProtectedRoute;
+
+
+
+

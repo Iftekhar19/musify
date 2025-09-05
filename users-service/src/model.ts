@@ -10,7 +10,7 @@ export interface Iuser extends Document{
     verifyAccountToken:string,
     VerifyAccountTokenExpiry:Date,
     verifypasswordToken:string,
-    verifyPasswordTokenExoiry:Date
+    verifyPasswordTokenExpiry:Date
 }
 
 const UserSchema:Schema<Iuser>=new Schema({
@@ -57,6 +57,6 @@ VerifyAccountTokenExpiry:{
     
 },
 verifypasswordToken:String,
-verifyPasswordTokenExoiry:Date
+verifyPasswordTokenExpiry:Date
 },{timestamps:true})
 export const User=mongoose.model("User",UserSchema)

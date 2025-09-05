@@ -30,24 +30,7 @@ const AlbumPage = () => {
     thumbnail: ""
   })
   const [loading,setLoading]=useState<Boolean>(true)
-// const mockAlbum = {
-//   title: "Midnight Vibes",
-//   description:
-//     "A collection of smooth, relaxing beats to set the perfect late-night mood.",
-//   artist: "DJ Aurora",
-//   cover: "https://picsum.photos/300/300?random=1",
-//   songs: [
-//     { id: "1", title: "Starry Night", duration: "3:42" },
-//     { id: "2", title: "Moonlight Drive", duration: "4:15" },
-//     { id: "3", title: "Eternal Chill", duration: "5:08" },
-//     { id: "1", title: "Starry Night", duration: "3:42" },
-//     { id: "2", title: "Moonlight Drive", duration: "4:15" },
-//     { id: "3", title: "Eternal Chill", duration: "5:08" },
-//     { id: "1", title: "Starry Night", duration: "3:42" },
-//     { id: "2", title: "Moonlight Drive", duration: "4:15" },
-//     { id: "3", title: "Eternal Chill", duration: "5:08" },
-//   ],
-// };
+
 useEffect(()=>
 {
   (async()=>

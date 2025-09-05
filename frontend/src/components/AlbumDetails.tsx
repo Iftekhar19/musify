@@ -1,9 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Play, Heart, Music } from "lucide-react";
-import { addToPlaylist } from "@/helper/helper";
-import { toast } from "sonner";
+import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthProvider";
+import { Heart, Music, Play } from "lucide-react";
 
 interface Song {
   id: string;
@@ -30,32 +28,10 @@ interface AlbumDetailsProps {
 const AlbumDetails = ({
   album,
   onPlaySong,
-  onLikeSong,
+  
   songs,
 }: AlbumDetailsProps) => {
-  const { value, setValue } = useAuth();
-  const addPlay = async function (id: string): Promise<void> {
-    // console.log(JSON.parse(value!))
-    try {
-      console.log(value);
-
-      const playList = value?.playlist;
-      const isExist = playList?.some((i: any) => i == id);
-      if (isExist) {
-        toast.error("Already exist", { position: "top-right" });
-      } else {
-        await addToPlaylist(id);
-
-        playList?.push(Number(id));
-
-        if (setValue) {
-          setValue(value!);
-        }
-      }
-    } catch (error) {
-      console.log("Unable to add playlist");
-    }
-  };
+  const { addToPlaylist } = useAuth();
   return (
     <div className="flex flex-col gap-6 py-6 h-full">
       {/* Album Info */}
@@ -100,7 +76,7 @@ const AlbumDetails = ({
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => addPlay(song.id)}
+                    onClick={() => addToPlaylist(song.id)}
                   >
                     <Heart className="h-5 w-5" />
                   </Button>

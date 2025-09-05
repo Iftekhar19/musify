@@ -33,10 +33,12 @@ type SignupFormData = z.infer<typeof signupSchema>;
 
 const Signup = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { value } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [success,setSuccess]=useState<boolean>(false)
+  const [successMsg,setSuccessMSg]=useState<string|null>(null)
 
   // React Hook Form setup
   const {
@@ -58,16 +60,21 @@ const Signup = () => {
   }, []);
 
   // Redirect if already logged in
-  useEffect(() => {
-    const storedUser = localStorage.getItem("authUser");
-    if (storedUser) {
-      navigate("/dashboard");
-    }
-  }, [user, navigate]);
+  useEffect(()=>
+  {
+  
+   if(value)
+   {
+    navigate('/dashboard')
+   }
+   
+  },[])
 
-  const onSubmit = async (data: SignupFormData) => {
+    const onSubmit = async (data: SignupFormData) => {
     console.log("Signup data:", data);
     try {
+      setSuccess(false)
+      setSuccessMSg(null)
       const res = await axios.post(
         "http://localhost:8000/api/v1/users/signup",
         {
@@ -79,7 +86,9 @@ const Signup = () => {
         }
       );
       toast.success(res?.data?.message);
-      navigate("/signin");
+      setSuccess(true)
+      setSuccessMSg(res?.data?.message)
+      // navigate("/signin");
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse>;
       toast.error(axiosError.response?.data?.message || "Unexpected error");
@@ -90,11 +99,14 @@ const Signup = () => {
     <div className="h-[100dvh] flex justify-center items-center bg-background px-4 transition-colors">
       <div className="w-full max-w-sm">
         <Card className="shadow-xl border rounded-2xl">
-          <CardHeader className="flex items-center justify-between">
-            <CardTitle className="text-2xl font-semibold">Sign Up</CardTitle>
+          <CardHeader className="flex items-center justify-between w-full">
+            <CardTitle className="text-2xl font-semibold text-center w-full">Sign Up</CardTitle>
           </CardHeader>
 
           <CardContent>
+           { success &&<div className="my-2 w-full ">
+              <p className="text-green-500">{successMsg}</p>
+            </div>}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               {/* Username */}
               <div className="space-y-2">

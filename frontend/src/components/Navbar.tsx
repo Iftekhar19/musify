@@ -9,35 +9,37 @@ import {
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
 import { User, Settings, LogOut, Sun, Moon, PlayCircleIcon, MenuIcon } from "lucide-react";
+import { useAuth } from "@/context/AuthProvider";
 interface NavbarProps{
 open:boolean,
 onOpenChange:(open:boolean)=>void;
 }
 
 const Navbar = ({onOpenChange}:NavbarProps) => {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
-
+  // const [theme, setTheme] = useState<"light" | "dark">("light");
+  
+const {signout,toggleTheme,theme}=useAuth()
   // Detect system preference & load saved theme
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle("dark", savedTheme === "dark");
-    } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const systemTheme = prefersDark ? "dark" : "light";
-      setTheme(systemTheme);
-      document.documentElement.classList.toggle("dark", prefersDark);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
+  //   if (savedTheme) {
+  //     setTheme(savedTheme);
+  //     document.documentElement.classList.toggle("dark", savedTheme === "dark");
+  //   } else {
+  //     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  //     const systemTheme = prefersDark ? "dark" : "light";
+  //     setTheme(systemTheme);
+  //     document.documentElement.classList.toggle("dark", prefersDark);
+  //   }
+  // }, []);
 
   // Toggle theme
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
-  };
+  // const toggleTheme = () => {
+  //   const newTheme = theme === "light" ? "dark" : "light";
+  //   setTheme(newTheme);
+  //   localStorage.setItem("theme", newTheme);
+  //   document.documentElement.classList.toggle("dark", newTheme === "dark");
+  // };
 
   return (
     <nav className="w-full border-b shadow-sm bg-background">
@@ -73,7 +75,7 @@ const Navbar = ({onOpenChange}:NavbarProps) => {
                 <Settings className="mr-2 h-4 w-4" /> Settings
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem className="text-red-600" onClick={signout}>
                 <LogOut className="mr-2 h-4 w-4" /> Logout
               </DropdownMenuItem>
             </DropdownMenuContent>

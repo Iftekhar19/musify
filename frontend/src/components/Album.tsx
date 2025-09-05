@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 interface AlbumCardProps {
-  id:string
+  id:string|number
   title: string;
   artist?: string;
   cover: string;

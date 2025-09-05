@@ -19,7 +19,7 @@ type SigninFormData = z.infer<typeof SigninSchema>;
 
 const Signin = () => {
   const navigate=useNavigate()
-  const {user,setUser} =useAuth()
+  const {setUser,setValue,value,user} =useAuth()
   // react-hook-form setup
   const {
     register,
@@ -40,8 +40,8 @@ const Signin = () => {
   }, []);
   useEffect(()=>
   {
-   const storedUser = localStorage.getItem("authUser");
-   if(storedUser)
+  
+   if(value)
    {
     navigate('/dashboard')
    }
@@ -61,7 +61,10 @@ const Signin = () => {
         }
       );
        setUser(data.user);
-      localStorage.setItem("authUser", JSON.stringify(data.user));
+       if (setValue) {
+         setValue(data.user);
+         setUser(data.user)
+       }
       toast.success("Login successfully",{
         position:'top-right'
       })

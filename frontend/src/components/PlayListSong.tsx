@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/context/AuthProvider";
 import { removeFromPlaylist } from "@/helper/helper";
@@ -7,13 +7,13 @@ import { Music, PlayCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 interface Song {
-   id: string;
+  id: string | number;
   title: string;
+  description: string;
   thumbnail: string;
   audio: string;
-  created_at: string;
-  description: string;
   album_id: string;
+  created_at: string;
 }
 
 interface PlaylistProps {
@@ -23,26 +23,14 @@ interface PlaylistProps {
   onDeleteSong?: (id: string) => void;
 }
 
-const PlaylistSongs = ({ songs, onPlaySong, onDeleteSong }: PlaylistProps) => {
+const PlaylistSongs = ({ songs, onPlaySong }: PlaylistProps) => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const {setValue}=useAuth()
+  const {removeFromPlaylist}=useAuth()
 
   const handleConfirmDelete = async() => {
     if (deleteId) {
      await removeFromPlaylist(deleteId)
-       const authUser=localStorage.getItem("authUser")
-       const parsedUser=authUser?JSON.parse(authUser):null
-       const playList=parsedUser.playlist
-       const newPlaylist=playList.filter((i:any)=>i!=deleteId)
-       parsedUser.playlist=newPlaylist
-       if (parsedUser && typeof setValue === "function") {
-           setValue(parsedUser);
-       
-       }
-      //  else{
-        
-      //  }
-      setDeleteId(null);
+     setDeleteId(null);
     } 
   };
 
@@ -79,7 +67,7 @@ const PlaylistSongs = ({ songs, onPlaySong, onDeleteSong }: PlaylistProps) => {
                       <Button
                         size="icon"
                         variant="ghost"
-                        onClick={() => onPlaySong?.(song.id)}
+                        // onClick={() => onPlaySong?.(song?.id)}
                       >
                         <PlayCircle className="h-5 w-5" />
                       </Button>
@@ -87,7 +75,7 @@ const PlaylistSongs = ({ songs, onPlaySong, onDeleteSong }: PlaylistProps) => {
                         size="icon"
                         variant="ghost"
                         className="text-destructive hover:text-destructive"
-                        onClick={() => setDeleteId(song.id)}
+                        onClick={() => setDeleteId(String(song.id))}
                       >
                         <Trash2 className="h-5 w-5" />
                       </Button>
