@@ -73,12 +73,21 @@ interface AuthContextType {
   songs: Songs[] | null;
   albums: Albums[] | null;
   setAlbums: Dispatch<SetStateAction<Albums[] | null>>;
-  setSongs: Dispatch<SetStateAction<Songs[] | null>>;
+  setSongs: Dispatch<SetStateAction<Songs[] | []>>;
   addToPlaylist: (id: string | number) => void;
   removeFromPlaylist: (id: string | number) => Promise<void>;
   playListSongs: Songs[];
-  toggleTheme:()=>void;
-  theme:string
+  toggleTheme: () => void;
+  theme: string;
+  isMobile: boolean;
+  song: Songs | null;
+  albumSongs:Songs[]
+  setAlbumSongs: Dispatch<SetStateAction<Songs[] | []>>;
+  prevSong: () => void;
+  nextSong: () => void;
+  playAlbumSongs: (idx: string | number) => void;
+  playSongs: (idx: string | number) => void;
+  playPlaylistSongs: (idx: string | number) => void;
 }
 
 // Create Context
@@ -90,72 +99,52 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const authUser = localStorage.getItem("authUser");
-  console.log(JSON.parse(authUser!));
+  // console.log(JSON.parse(authUser!));
   const parsedUser = authUser ? JSON.parse(authUser) : null;
   const [value, setValue, removeValue] =
     useLocalStorage<localStorageUser | null>("authUser", parsedUser);
-      const storedTheme = localStorage.getItem("theme")||"light";
+  const storedTheme = localStorage.getItem("theme") || "light";
 
-    const [theme,setTheme,removeTheme]=useLocalStorage<"light"|"dark">("theme",storedTheme=="light"?"light":"dark")
+  const [theme, setTheme] = useLocalStorage<"light" | "dark">(
+    "theme",
+    storedTheme == "light" ? "light" : "dark"
+  );
   const [isPlaying, setIsPlaying] = useState<boolean>(false);
   const [selectedSong, setSelectedSong] = useState<string | null>(null);
-  const [songs, setSongs] = useState<Songs[] | null>([]);
+  const [songs, setSongs] = useState<Songs[] | []>([]);
+  const [song, setSong] = useState<Songs | null>(null);
   const [albums, setAlbums] = useState<Albums[] | null>([]);
   const [playListSongs, setPlayListSongs] = useState<Songs[]>([]);
-
-  // Load user from localStorage on mount
-  // useEffect(() => {
-  //   if (value) {
-  //     const mappedUser: User = {
-  //       _id: (value as any)._id ?? "",
-  //       email: value.email,
-  //       name: value.name,
-  //       phone: value.phone,
-  //       playlist: Array.isArray(value.playlist)
-  //         ? value.playlist.map(String)
-  //         : [],
-  //       role: value.role,
-  //       isVerified: value.isVerified,
-  //     };
-  //     setUser(mappedUser);
-  //   }
-  //   setLoading(false);
-  // }, []);
-
-  // const signin = async ({ email, password }: UserSignIn): Promise<void> => {
-  //   try {
-  //     const { data } = await axios.post(
-  //       `http://localhost:8000/api/v1/users/signin`,
-  //       { email, password }
-  //     );
-
-  //     setUser(data.user);
-  //     localStorage.setItem("authUser", JSON.stringify(data.user));
-  //   } catch (error) {
-  //     console.error("Signin error:", error);
-  //     throw error; // let caller handle error if needed
-  //   }
-  // };
-
-  const signout = async ():Promise<void> => {
-  try {
-      await axios.post(`http://localhost:8000/api/v1/users/logout`,{
-        
-      },{withCredentials:true})
+  const [index, setIndex] = useState<number>(0);
+  // const [queue,setQueue]=useState<Songs[]|[]>([])
+  const [albumSongs, setAlbumSongs] = useState<Songs[] | []>([]);
+  const [isPlayingFromQueue, setIsPlayingFromQueue] = useState<boolean>(false);
+  const [isPlayingFromPlaylist, setIsPlayingFromPlaylist] =
+    useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const signout = async (): Promise<void> => {
+    try {
+      await axios.post(
+        `http://localhost:8000/api/v1/users/logout`,
+        {},
+        { withCredentials: true }
+      );
       setUser(null);
       removeValue();
-      toast.success("Logged out successfully",{position:"top-right"})
+      toast.success("Logged out successfully", { position: "top-right" });
       window.location.reload();
-  } catch (error) {
-     const AxiosError = error as AxiosError<ApiResponse>;
-     toast.error(AxiosError.message,{position:"top-right"})
-  }
+    } catch (error) {
+      const AxiosError = error as AxiosError<ApiResponse>;
+      toast.error(AxiosError.message, { position: "top-right" });
+    }
   };
 
   const fetchSongs = useCallback(async () => {
     try {
       const { data } = await axios.get(`${song_server}/songs`);
       setSongs(data?.songs || []);
+      // setSong(data?.songs[0]);
+      // setSelectedSong(data?.songs[0].toString());
     } catch (error) {
       console.log(error);
     }
@@ -175,7 +164,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         { idArray: value?.playlist },
         { withCredentials: true }
       );
-      console.log(data);
+      // console.log(data);
       setPlayListSongs(data?.playList || []);
     } catch (error) {
       console.log(error);
@@ -186,8 +175,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data } = await axios.get(`${user_server}/profile`, {
         withCredentials: true,
       });
-      console.log("data from fetch profile");
-      console.log(data.user);
+      // console.log("data from fetch profile");
+      // console.log(data.user);
       setUser(data.user);
       setValue(data.user);
     } catch (error) {
@@ -195,7 +184,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log(error);
     }
   }, []);
-  const addToPlaylist = async (id: string | number) => {
+  const addToPlaylist = async (id: string | number): Promise<void> => {
+    if (!user) {
+      toast.error("You are not logged in", { position: "top-right" });
+      return;
+    }
     const myPlaylist: number[] = (value?.playlist ?? []).map(Number);
 
     const isExist = myPlaylist?.find((li) => li == id);
@@ -236,6 +229,92 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       toast.error("Unale to remove playlist", { position: "top-right" });
     }
   };
+  // songs playing and related functions
+  const nextSong = () => {
+    const currentIndex = index;
+    if (isPlayingFromQueue) {
+      console.log("hello from if");
+      if (currentIndex == (albumSongs.length - 1)) {
+        setIndex(0);
+        setSelectedSong(albumSongs[0].id.toString());
+      } else {
+        setIndex((currentIndex + 1)%albumSongs.length);
+        setSelectedSong(albumSongs[((currentIndex + 1)%albumSongs.length)].id.toString());
+      }
+      setSong(albumSongs[((currentIndex + 1)%albumSongs.length)]);
+    } else if (isPlayingFromPlaylist) {
+      console.log("hello from else if");
+
+      if (currentIndex == (playListSongs.length - 1)) {
+        setIndex(0);
+        setSelectedSong(playListSongs[0].id.toString());
+      } else {
+        setIndex(((currentIndex + 1)%playAlbumSongs.length));
+        setSelectedSong(playListSongs[((currentIndex + 1)%playAlbumSongs.length)].id.toString());
+      }
+      setSong(playListSongs[((currentIndex + 1)%playListSongs.length)]);
+    } else {
+      console.log("hello from else");
+      if (currentIndex == (songs.length - 1)) {
+        setIndex(0);
+        setSelectedSong(songs[0].id.toString());
+         setSong(songs[0]);
+      } else {
+        setIndex(((currentIndex + 1)%songs.length));
+        setSelectedSong(songs[((currentIndex + 1)%songs.length)].id.toString());
+        setSong(songs[(((currentIndex + 1)%songs.length))]);
+      }
+    }
+  };
+  const prevSong = () => {
+    const currentIndex = index;
+    if (isPlayingFromQueue) {
+      if (currentIndex !== 0) {
+        setIndex(currentIndex - 1);
+        setSelectedSong(albumSongs[currentIndex - 1].id.toString());
+        setSong(albumSongs[currentIndex - 1]);
+      }
+    } else if (isPlayingFromPlaylist) {
+      if (currentIndex !== 0) {
+        setIndex(currentIndex - 1);
+        setSelectedSong(playListSongs[((currentIndex - 1)%playListSongs.length)].id.toString());
+        setSong(playListSongs[((currentIndex - 1)%playListSongs.length)]);
+      }
+    } else {
+      if (currentIndex !== 0) {
+        setIndex(currentIndex - 1);
+        setSelectedSong(songs[currentIndex - 1].id.toString());
+        setSong(songs[currentIndex - 1]);
+      }
+
+    }
+  };
+  const playSongs = (idx: string | number): void => {
+    
+    setIndex(Number(idx));
+    setSelectedSong(songs[Number(idx)].id.toString());
+    setSong(songs[Number(idx)]);
+    setIsPlayingFromPlaylist(false);
+    setIsPlayingFromQueue(false);
+     setIsPlaying(true)
+  };
+  const playPlaylistSongs = (idx: string | number): void => {
+    console.log(idx)
+    setIndex(Number(idx));
+    setSelectedSong(playListSongs[Number(idx)].id.toString());
+    setSong(playListSongs[Number(idx)]);
+    setIsPlayingFromPlaylist(true);
+    setIsPlayingFromQueue(false);
+     setIsPlaying(true)
+  };
+  const playAlbumSongs = (idx: string | number): void => {
+    setIndex(Number(idx));
+    setSelectedSong(albumSongs[Number(idx)].id.toString());
+    setSong(albumSongs[Number(idx)]);
+    setIsPlayingFromPlaylist(false);
+    setIsPlayingFromQueue(true);
+     setIsPlaying(true)
+  };
   useEffect(() => {
     (async () => {
       try {
@@ -251,7 +330,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     (async () => {
       try {
-        console.log("fetched Playlist called");
+        // console.log("fetched Playlist called");
         await fetchPlayList();
       } catch (error) {
         toast.error("Unable to load playList");
@@ -259,24 +338,37 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     })();
   }, [value]);
-    useEffect(() => {
+  useEffect(() => {
     // const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
     if (theme) {
       // setTheme(savedTheme);
       document.documentElement.classList.toggle("dark", theme === "dark");
     } else {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      ).matches;
       const systemTheme = prefersDark ? "dark" : "light";
       setTheme(systemTheme);
       document.documentElement.classList.toggle("dark", prefersDark);
     }
   }, []);
-    const toggleTheme = () => {
+  const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    
+
     document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
+
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsMobile(window.innerWidth < 500); // same as Tailwind md
+    };
+    setIsMobile(window.innerWidth < 500);
+    checkDevice();
+    window.addEventListener("resize", checkDevice);
+
+    return () => window.removeEventListener("resize", checkDevice);
+  }, []);
 
   return (
     <AuthContext.Provider
@@ -299,7 +391,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         removeFromPlaylist,
         playListSongs,
         toggleTheme,
-        theme
+        theme,
+        song,
+        prevSong,
+        nextSong,
+        setAlbumSongs,
+        playAlbumSongs,
+        playSongs,
+        playPlaylistSongs,
+        isMobile,
+        albumSongs
       }}
     >
       {children}

@@ -1,4 +1,5 @@
 import AlbumDetails from "@/components/AlbumDetails";
+import { useAuth } from "@/context/AuthProvider";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
@@ -29,6 +30,7 @@ const AlbumPage = () => {
     description: "",
     thumbnail: ""
   })
+  const {setAlbumSongs}=useAuth()
   const [loading,setLoading]=useState<Boolean>(true)
 
 useEffect(()=>
@@ -39,6 +41,7 @@ useEffect(()=>
       const {data}=await axios.get(`http://localhost:8002/api/v1/album/${params.id}/songs`)
       setAlbum(data.album)
       setSongs(data.songs)
+      setAlbumSongs(data.songs)
     } catch (error) {
       console.log(error)
     }
@@ -61,9 +64,9 @@ useEffect(()=>
     
       <AlbumDetails
       album={album}
-      songs={songs}
-      onPlaySong={(id) => console.log("Play song:", id)}
-      onLikeSong={(id) => console.log("Like song:", id)}
+      // songs={songs}
+      // onPlaySong={(id) => console.log("Play song:", id)}
+      // onLikeSong={(id) => console.log("Like song:", id)}
       />
     }
     </>

@@ -10,6 +10,7 @@ import {
   Volume2,
   VolumeX,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthProvider";
 
 interface MusicPlayerProps {
   title: string;
@@ -18,18 +19,21 @@ interface MusicPlayerProps {
   src: string;
 }
 
-const MusicPlayer: React.FC<MusicPlayerProps> = ({
-  title,
-  artist,
-  thumbnail,
-  src,
-}) => {
+const MusicPlayer: React.FC = (
+  // {
+//   title,
+//   artist,
+//   thumbnail,
+//   src,
+// }
+) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
+  // const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [muted, setMuted] = useState(false);
+  const {prevSong,nextSong,song,setIsPlaying,isPlaying}=useAuth()
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -40,12 +44,16 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({
 
     audio.addEventListener("loadedmetadata", handleLoadedMetadata);
     audio.addEventListener("timeupdate", handleTimeUpdate);
-
+    if(isPlaying && audioRef)
+    {
+      audio?.play()
+    }
     return () => {
       audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
       audio.removeEventListener("timeupdate", handleTimeUpdate);
     };
-  }, []);
+
+  }, [song,isPlaying]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -90,16 +98,16 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({
           {/* Thumbnail + Title */}
           <div className="flex items-center gap-3 w-full ">
             <img
-              src={thumbnail}
-              alt={title}
+              src={song?.thumbnail}
+              alt={song?.title}
               className="w-16 h-16   object-cover"
             />
             <div className="truncate">
               <h3 className="text-base md:text-lg font-semibold truncate">
-                {title}
+                {song?.title}
               </h3>
               <p className="text-xs md:text-sm text-muted-foreground truncate">
-                {artist}
+                {song?.description}
               </p>
             </div>
           </div>
@@ -125,7 +133,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({
             <div className="flex items-center justify-between gap-3  ">
               {/* Controls */}
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="">
+                <Button variant="ghost" size="icon" className="" onClick={prevSong}>
                   <SkipBack className="w-5 h-5" />
                 </Button>
 
@@ -141,8 +149,8 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({
                   )}
                 </Button>
 
-                <Button variant="ghost" size="icon">
-                  <SkipForward className="w-5 h-5" />
+                <Button variant="ghost" size="icon" onClick={nextSong}>
+                  <SkipForward className="w-5 h-5"  />
                 </Button>
               </div>
 
@@ -177,7 +185,7 @@ const MusicPlayer: React.FC<MusicPlayerProps> = ({
         </div>
 
         {/* Hidden Audio Element */}
-        <audio ref={audioRef} src={src} preload="metadata" />
+        <audio ref={audioRef} src={song?.audio} preload="metadata" />
       </CardContent>
     </Card>
   );

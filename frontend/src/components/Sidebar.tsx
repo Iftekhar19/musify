@@ -1,16 +1,18 @@
 import { Album, Music, ListMusic,User2Icon } from "lucide-react";
 import { Link } from "react-router-dom";
 import MusicPlayer from "./MusicPlayer";
+import { useAuth } from "@/context/AuthProvider";
 
 const menuItems = [
-  { label: "Albums", icon: Album ,link:'/dashboard'},
-  { label: "Songs", icon: Music,link:'/dashboard/songs' },
-  { label: "Playlist", icon: ListMusic, link:'/dashboard/playlist'},
-  { label: "Profile", icon: User2Icon,link:'/dashboard/profile' },
+  { label: "Albums", icon: Album ,link:'/'},
+  { label: "Songs", icon: Music,link:'/songs' },
+  { label: "Playlist", icon: ListMusic, link:'/playlist'},
+  { label: "Profile", icon: User2Icon,link:'/profile' },
   // You can add more items here — scroll will activate automatically
 ];
 
 const Sidebar = () => {
+  const {isMobile,song}=useAuth()
   return (
     <aside className="w-[300px] h-full border-r bg-background flex flex-col">
       {/* App Name / Logo */}
@@ -40,12 +42,7 @@ const Sidebar = () => {
       </nav>
       <div className="hidden md:block">
 
-                <MusicPlayer
-  title="Shape of You"
-  artist="Ed Sheeran"
-  thumbnail="https://res.cloudinary.com/dpikyjfdy/image/upload/v1756634826/album-image-1_y9xl6g.avif"
-  src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-/>
+                {(!isMobile && song) &&<MusicPlayer/>}
       </div>
     </aside>
   );

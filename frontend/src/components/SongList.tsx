@@ -18,20 +18,28 @@ interface SongListProps {
 }
 
 const SongList = ({ songs, onPlaySong }: SongListProps) => {
-const {addToPlaylist}=useAuth()
+const {addToPlaylist,playSongs,selectedSong}=useAuth()
 
   return (
     <Card className="rounded-xl shadow-md border border-border/50 bg-white dark:bg-transparent">
       <CardContent className="divide-y px-2">
-        {songs?.map((song) => (
+        {songs?.map((song,idx) => (
           <div
             key={song.id}
-            className="flex items-center justify-between py-3 px-2 hover:bg-muted/40 rounded-md transition"
+            className={`flex items-center justify-between py-3  px-2 hover:bg-muted/40 rounded-md transition `}
           >
             {/* Song Info */}
-            <div className="flex items-center gap-3">
-              <Music className="h-5 w-5 text-muted-foreground" />
-              <span className="font-medium">{song.title}</span>
+            <div className={`flex items-center gap-3 ${song?.id==selectedSong?"text-green-400":""}`}>
+              <div className="h-6 w-6 flex justify-center  items-center ">
+
+              {song?.thumbnail ?<img className="h-full w-full bg-cover" src={song?.thumbnail}/>:<Music color={song?.id==selectedSong?"green":"gray"} className={`h-full w-full text-muted-foreground `} />}
+              </div>
+              {/* <Music className="h-5 w-5 text-muted-foreground" /> */}
+              <div className="flex flex-col ">
+
+              <span className="font-medium text-[14px]">{song.title}</span>
+              <span className="text-[12px]">{song?.description}</span>
+              </div>
             </div>
 
             {/* Actions */}
@@ -43,13 +51,15 @@ const {addToPlaylist}=useAuth()
                 size="icon"
                 variant="ghost"
                 onClick={() => addToPlaylist(String(song?.id))}
+                className="cursor-pointer"
               >
                 <Heart className="h-5 w-5" />
               </Button>
               <Button
                 size="icon"
-                className="rounded-full"
-                onClick={() => onPlaySong?.(song?.id)}
+                className="rounded-full cursor-pointer h-8 w-8"
+                onClick={() => playSongs(idx)}
+                
               >
                 <Play className="h-5 w-5" />
               </Button> 

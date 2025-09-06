@@ -43,7 +43,7 @@ const Signin = () => {
   
    if(value)
    {
-    navigate('/dashboard')
+    navigate('/')
    }
    
   },[user])

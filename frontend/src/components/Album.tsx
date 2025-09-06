@@ -15,7 +15,7 @@ interface AlbumCardProps {
 const AlbumCard = ({ title, artist, cover, onPlay, onLike,id }: AlbumCardProps) => {
     const router=useNavigate()
   return (
-    <Card onClick={()=>router(`/dashboard/albums/${id}`)} className="group cursor-pointer relative max-w-[250px] w-full rounded-2xl overflow-hidden shadow-md hover:shadow-2xl bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-md border border-border/50 transition-all duration-300">
+    <Card onClick={()=>router(`/albums/${id}`)} className="group cursor-pointer relative max-w-[250px] w-full rounded-2xl overflow-hidden shadow-md hover:shadow-2xl bg-gradient-to-b from-background/80 to-background/40 backdrop-blur-md border border-border/50 transition-all duration-300">
       {/* Album Cover */}
       <div className="relative">
         <img
