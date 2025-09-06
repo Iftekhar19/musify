@@ -1,18 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthProvider";
 import {
-  MenuIcon,
   Moon,
   PlayCircleIcon,
   Sun
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-interface NavbarProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+// interface NavbarProps {
+//   open: boolean;
+//   onOpenChange: (open: boolean) => void;
+// }
 
-const Navbar = ({ onOpenChange }: NavbarProps) => {
+const Navbar = () => {
   const { signout, toggleTheme, theme,user } = useAuth();
   const navigate=useNavigate();
 

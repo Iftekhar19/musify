@@ -1,23 +1,23 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { useAuth } from "@/context/AuthProvider";
 import {
-  Play,
   Pause,
+  Play,
   SkipBack,
   SkipForward,
   Volume2,
   VolumeX,
 } from "lucide-react";
-import { useAuth } from "@/context/AuthProvider";
+import React, { useEffect, useRef, useState } from "react";
 
-interface MusicPlayerProps {
-  title: string;
-  artist: string;
-  thumbnail: string;
-  src: string;
-}
+// interface MusicPlayerProps {
+//   title: string;
+//   artist: string;
+//   thumbnail: string;
+//   src: string;
+// }
 
 const MusicPlayer: React.FC = (
   // {

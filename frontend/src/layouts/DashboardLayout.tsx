@@ -2,17 +2,16 @@ import MusicPlayer from "@/components/MusicPlayer";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/context/AuthProvider";
-import { useState } from "react";
 import { Link, Outlet } from "react-router-dom";
 
 const DashboardLayout = () => {
-    const [open,setOpen]=useState<boolean>(false)
-    const {isMobile,song}=useAuth()
+  const {isMobile,song}=useAuth()
+  // const [open,setOpen]=useState<boolean>(false)
 
-    const onOpenChange=()=>
-    {
-        setOpen(!open)
-    }
+  //   const onOpenChange=()=>
+  //   {
+  //       setOpen(!open)
+  //   }
 
   return (
     <div className="h-[100dvh] max-w-[1440px] mx-auto w-full flex flex-col">
@@ -20,7 +19,8 @@ const DashboardLayout = () => {
       {/* <div className='bg-yellow-400 h-[100px] w-full'>
        
      </div> */}
-      <Navbar open={open} onOpenChange={onOpenChange}/>
+      {/* <Navbar open={open} onOpenChange={onOpenChange}/> */}
+      <Navbar />
       {/* main section */}
       <div className="w-full flex-1 flex ">
         {/* sidebar for desktop */}

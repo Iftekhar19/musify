@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthProvider";
-import { Heart, Music, Pause, Play, PlayCircle, PlayIcon } from "lucide-react";
+import { Heart, Music, Pause, Play, PlayIcon } from "lucide-react";
 
-interface Song {
-  id: string;
-  title: string;
-  description?: string;
-  thumbnail?: string;
-  duration?: string;
-  album_id: string;
-  auido: string;
-}
+// interface Song {
+//   id: string;
+//   title: string;
+//   description?: string;
+//   thumbnail?: string;
+//   duration?: string;
+//   album_id: string;
+//   auido: string;
+// }
 
 interface AlbumDetailsProps {
   album: {
