@@ -15,7 +15,7 @@ const Albums = () => {
             title={album.title}
             artist={album.description}
             cover={album.thumbnail}
-            onPlay={() => console.log(`Playing ${album.title}`)}
+            // onPlay={() => console.log(`Playing ${album.title}`)}
           />
         ))}
       </div>

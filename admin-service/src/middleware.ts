@@ -21,8 +21,9 @@ export const isAth=async(req:AuthenticatedRequest,res:Response,next:NextFunction
 {
   try {
    const token=req.headers.token as string;
-  const Cookiestoken: string | undefined = req.cookies?.token;
-   if(!token) throw new Error("token not found")
+  const Cookiestoken: string | undefined = req.cookies?.token||token;
+  // console.log(Cookiestoken)
+   if(!Cookiestoken) throw new Error("token not found")
    const {data}=await axios.get(`http://localhost:8000/api/v1/users/profile`,{
    headers:{
     token:token||Cookiestoken
@@ -31,6 +32,7 @@ export const isAth=async(req:AuthenticatedRequest,res:Response,next:NextFunction
   req.user=data.user
   next();
 } catch (error) {
+  console.log(error)
     res.status(403).json({
       message:"Unauthenticated user",
       success:false 

@@ -37,7 +37,7 @@ export default function VerifyAccount() {
     
      if(value)
      {
-      navigate('/dashboard')
+      navigate('/')
      }
      
     },[])

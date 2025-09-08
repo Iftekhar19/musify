@@ -21,6 +21,7 @@ interface User {
   playlist: string[] | number[];
   role: string;
   isVerified: boolean;
+  token:string|null
 }
 
 // interface UserSignIn {
@@ -39,6 +40,7 @@ export interface localStorageUser {
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
+  token:string|null
 }
 interface Songs {
   id: string | number;
@@ -176,9 +178,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         withCredentials: true,
       });
       // console.log("data from fetch profile");
-      // console.log(data.user);
-      setUser(data.user);
-      setValue(data.user);
+      console.log(data);
+      setUser({
+        ...data.user,
+        token:data.token
+      });
+      setValue({
+        ...data.user,
+        token:data.token
+      });
     } catch (error) {
       removeValue();
       console.log(error);

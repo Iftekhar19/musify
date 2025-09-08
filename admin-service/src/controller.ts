@@ -15,7 +15,8 @@ export const addAlbum = asyncHandler(async (req: AuthenticatedRequest, res) => {
     });
     return;
   }
-  const { title, description } = req.body;
+  const albumData=req.body.data
+  const { title, description, category_id } = JSON.parse(albumData);
   const file = req.file;
   if (!file) {
     res.status(400).json({
@@ -50,10 +51,11 @@ export const addAlbum = asyncHandler(async (req: AuthenticatedRequest, res) => {
   }
 
   const result = await sql`
-INSERT INTO albums (title,description,thumbnail) VALUES (
+INSERT INTO albums (title,description,thumbnail,category_id) VALUES (
 ${title},
-${description},
-${cloud.secure_url}
+${description||""},
+${cloud.secure_url},
+${category_id}
 ) RETURNING *
 `;
   if (redisClient.isReady) {
@@ -75,15 +77,15 @@ export const addSong = asyncHandler(
         success: false,
       });
     }
-    const { title, description, album } = req.body;
-    const isAlbum = await sql`SELECT * FROM albums WHERE id=${album}`;
-    // console.log(album);
-    if (isAlbum.length === 0) {
-      return res.status(404).json({
-        message: "album not exist",
-        success: false,
-      });
-    }
+    const songData=req.body.data
+    const { title, description, album, category } = JSON.parse(songData);
+    // const isAlbum = await sql`SELECT * FROM albums WHERE id=${album}`;
+    // if (isAlbum.length === 0) {
+    //   return res.status(404).json({
+    //     message: "album not exist",
+    //     success: false,
+    //   });
+    // }
 
     const file = req.file;
     if (!file) {
@@ -108,7 +110,6 @@ export const addSong = asyncHandler(
       cloud = await cloudinary.v2.uploader.upload(fileBuffer.content, {
         folder: "songs",
         resource_type: "video",
-        
       });
     } catch (error) {
       console.log(error);
@@ -120,18 +121,19 @@ export const addSong = asyncHandler(
     }
 
     const result = await sql`
-  INSERT INTO songs (title,description,audio,album_id) VALUES 
-  (${title},${description},${cloud.secure_url},${album}) RETURNING *
+  INSERT INTO songs (title,description,audio,album_id,category_id) VALUES 
+  (${title},${description},${cloud.secure_url},${album},${category}) RETURNING *
   `;
     // console.log(result);
 
-    if(redisClient.isReady)
-    {
-      await redisClient.del('songs')
+    if (redisClient.isReady) {
+      await redisClient.del("songs");
+      await redisClient.del(`songs_of_album_${album}`);
     }
     return res.status(201).json({
       message: "Song added successfully",
       success: true,
+      song:result
     });
   }
 );
@@ -167,9 +169,8 @@ export const addThumbnail = asyncHandler(
     SET thumbnail = ${cloud.secure_url}
     WHERE id=${songId}
     `;
-    if(redisClient.isReady)
-    {
-      await redisClient.del("songs")
+    if (redisClient.isReady) {
+      await redisClient.del("songs");
     }
     return res.status(200).json({
       message: "Thumbnail added successfully",
@@ -195,14 +196,12 @@ export const deleteAlbum = asyncHandler(
     // }
     await sql`DELETE FROM songs WHERE album_id=${albumId}`;
     await sql`DELETE FROM albums WHERE id=${albumId}`;
-    if(redisClient.isReady)
-    {
-      await redisClient.del("songs")
-      await redisClient.del(`songs_of_album_${albumId}`)
+    if (redisClient.isReady) {
+      await redisClient.del("songs");
+      await redisClient.del(`songs_of_album_${albumId}`);
     }
-    if(redisClient.isReady)
-    {
-      await redisClient.del("albums")
+    if (redisClient.isReady) {
+      await redisClient.del("albums");
     }
     res.status(200).json({
       sussess: true,
@@ -223,15 +222,186 @@ export const deleteSong = asyncHandler(
     }
     const { songId } = req.params;
     await sql`DELETE FROM songs WHERE id=${songId}`;
-    if(redisClient.isReady)
-    {
-      await redisClient.del("songs")
-      await redisClient.del(`song_${songId}`)
+    if (redisClient.isReady) {
+      await redisClient.del("songs");
+      await redisClient.del(`song_${songId}`);
     }
     res.status(200).json({
       sussess: true,
       message: "Song deleted successfully",
     });
     return;
+  }
+);
+export const addCategory = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        message: "Unauthorize user",
+        success: false,
+      });
+    }
+    const file=req.file
+    const categoryData = req.body.data;
+    console.log(categoryData)
+    const {title,description}=JSON.parse(categoryData)
+    console.log(title,description)
+    if (!title) {
+      return res.status(400).json({
+        message: "title is required",
+        success: false,
+      });
+    }
+    let cloud;
+    
+    if(file)
+    {
+      const fileBuffer=getBuffer(file)
+      if(fileBuffer&&fileBuffer.content)
+      {
+          cloud=  await cloudinary.v2.uploader.upload(fileBuffer.content,{
+         folder:"thumbnail"
+        })
+      }
+
+    }
+    // const file = req.file;
+    //  console.log(title)
+    // const fileBuffer = getBuffer(file);
+    // let cloud;
+    // if(file)
+    // {
+    // try {
+    //   cloud=  await cloudinary.v2.uploader.upload(fileBuffer.content!,{
+    //      folder:"thumbnail"
+    //     })
+    // } catch (error) {
+    //   console.log(error)
+    //   return res.status(500).json({
+    //     message:"Server error from cloudinary",
+    //     success:false
+    //   })
+    // }
+    // }
+    let result = await sql`INSERT INTO categories (title,description,thumbnail) VALUES 
+    (${title},${description || ""},${cloud?cloud.secure_url:""}) RETURNING *`;
+
+    return res.status(201).json({
+      message: "Category added successfully",
+      success: true,
+      category: result,
+    });
+  }
+);
+export const deleteCategory = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        message: "Unauthorize user",
+        success: false,
+      });
+    }
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({
+        message: "id is required",
+        success: false,
+      });
+    }
+    const result = await sql`DELETE FROM categories WHERE id = ${id}`;
+    return res.status(200).json({
+      message: `Category with id ${id} is deleted`,
+      success: true,
+    });
+  }
+);
+export const updateCategory = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        message: "Unauthorize user",
+        success: false,
+      });
+    }
+    const { id } = req.params;
+    // console.log(id);
+    // console.log(req.body);
+    const catData=req.body.data
+    const { description,title } = JSON.parse(catData)
+    if (!id) {
+      return res.status(400).json({
+        message: "id is required",
+        success: false,
+      });
+    }
+    const file=req.file
+    // console.log(file)
+    // const file = req.file;
+    // const fileBuffer = getBuffer(file);
+
+    // if (!fileBuffer || !fileBuffer.content) {
+    //   return res.status(400).json({
+    //     message: "Thumbnail is required",
+    //     success: false,
+    //   });
+    // }
+    // let cloud;
+    // try {
+    //   cloud = await cloudinary.v2.uploader.upload(fileBuffer.content!, {
+    //     folder: "thumbnail",
+    //   });
+    // } catch (error) {
+    //   console.log(error);
+    //   return res.status(500).json({
+    //     message: "Server error from cloudinary",
+    //     success: false,
+    //   });
+    // }
+let cloud;
+    if(file){
+      const fileBuffer=getBuffer(file)
+
+      if(fileBuffer && fileBuffer.content)
+      {
+   cloud = await cloudinary.v2.uploader.upload(fileBuffer.content, {
+        folder: "thumbnail",
+      });
+      }
+    }
+    let result
+ if(cloud)
+ {
+
+    result= await sql`UPDATE categories SET description=${description||""}, title=${title},thumbnail=${cloud?cloud.secure_url:""} WHERE id=${id}`;
+ }
+ else{
+      result= await sql`UPDATE categories SET description=${description||""}, title=${title} WHERE id=${id}`;
+
+ }
+  
+
+    
+    return res.status(200).json({
+      message: "Updated successfully",
+      success: true,
+      result
+    });
+  }
+);
+export const getCategories = asyncHandler(
+  async (req: AuthenticatedRequest, res: Response) => {
+   console.log( req?.user?.role)
+    if (req.user?.role !== "admin") {
+      return res.status(403).json({
+        message: "Unauthorize user",
+        success: false,
+      });
+    }
+    const result=await sql`SELECT * FROM categories`;
+    return res.status(200).json({
+      message:"Categories fetched successfully",
+      success:true,
+      categories:result
+    })
   }
 );

@@ -2,7 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { User, type Iuser } from "./model.js";
 export interface AuthenticatedRequest extends Request{
-     user?:Iuser|null
+     user?:Iuser|null;
+     token?:string|null
 }
 export const middleware=async(req:AuthenticatedRequest,res:Response,next:NextFunction):Promise<void>=>{
 try {
@@ -28,6 +29,7 @@ try {
     return;
    }
    req.user=user;
+   req.token=token
    next();
 
 } catch (error) {

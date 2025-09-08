@@ -94,7 +94,7 @@ export const loginUser=asyncHandler(async(req,res)=>
       }) 
     }
 
-    const token=await jwt.sign({_id:user._id},process.env.JWT_SECRETKEY as string,{
+    const token= jwt.sign({_id:user._id},process.env.JWT_SECRETKEY as string,{
         expiresIn:"7d"
     })
  
@@ -102,7 +102,8 @@ export const loginUser=asyncHandler(async(req,res)=>
       httpOnly:true, 
       maxAge: 7 * 24 * 60 * 60 * 1000,
       // sameSite:"none",
-      // secure:false
+      // domain:"localhost",
+      secure:false
     }).status(201).json({
         message:"User Logged in successfully",
         success:true,
@@ -113,10 +114,12 @@ export const loginUser=asyncHandler(async(req,res)=>
 export const userProfile=asyncHandler(async(req:AuthenticatedRequest,res:Response)=>
 {
     const user=req.user;
+    const token=req.token
     return res.status(200).json({
         message:"User information",
         success:true,
-        user
+        user,
+        token:token
     })
 })
 export const addSongToPlaylist=asyncHandler(async(req:AuthenticatedRequest,res:Response)=>

@@ -1,17 +1,26 @@
+import Loader from "@/components/Loader";
 import MusicPlayer from "@/components/MusicPlayer";
 import Navbar from "@/components/Navbar";
 import Sidebar from "@/components/Sidebar";
 import { useAuth } from "@/context/AuthProvider";
+import { Album, ListMusic, Music, User2Icon } from "lucide-react";
 import { Link, Outlet } from "react-router-dom";
 
 const DashboardLayout = () => {
-  const {isMobile,song}=useAuth()
+  const {isMobile,song,loading}=useAuth()
   // const [open,setOpen]=useState<boolean>(false)
 
   //   const onOpenChange=()=>
   //   {
   //       setOpen(!open)
   //   }
+  const menuItems = [
+  { label: "Albums", icon: Album ,link:'/'},
+  { label: "Songs", icon: Music,link:'/songs' },
+  { label: "Playlist", icon: ListMusic, link:'/playlist'},
+  { label: "Profile", icon: User2Icon,link:'/profile' },
+  // You can add more items here — scroll will activate automatically
+];
 
   return (
     <div className="h-[100dvh] max-w-[1440px] mx-auto w-full flex flex-col">
@@ -25,7 +34,7 @@ const DashboardLayout = () => {
       <div className="w-full flex-1 flex ">
         {/* sidebar for desktop */}
         <section className=" hidden md:block border h-full">
-            <Sidebar/>
+            <Sidebar  />
         </section>
         {/* side bar for mobile */}
         {/* <section className="md:hidden block">
@@ -43,8 +52,10 @@ const DashboardLayout = () => {
 
           </div>
           <div className="h-full overflow-y-auto"> 
-
-          <Outlet />
+          {
+            loading?<Loader/>:<Outlet />
+          }
+          
            </div>
         <div className="md:hidden mt-2">
 {     (isMobile && song) &&   <MusicPlayer

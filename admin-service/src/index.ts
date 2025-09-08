@@ -6,7 +6,12 @@ import cloudinary from "cloudinary"
 import cors from 'cors'
 
 const app =express();
-app.use(cors())
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend
+    credentials: true,               // allow cookies 
+  }) 
+);
 dotenv.config() 
 app.use(express.json())
 cloudinary.v2.config({
@@ -33,7 +38,7 @@ initDB().then(()=>
     })
 }).catch(err=> 
 {
-   console.log(err) 
+   console.log(err?.message) 
    process.exit() 
 } 
 )

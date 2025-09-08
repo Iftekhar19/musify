@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/context/AuthProvider";
-import { Heart, Music, Play } from "lucide-react";
+import { Heart, Music, Play, Trash } from "lucide-react";
+import ConfirmDeleteDialog from "./DeleteDialog";
+import { useState } from "react";
 interface Song {
   id: string | number;
   title: string;
@@ -14,11 +16,28 @@ interface Song {
 
 interface SongListProps {
   songs: Song[]|null;
-  onPlaySong?: (songId: string|number) => void;
+  // onPlaySong?: (songId: string|number) => void;
 }
 
-const SongList = ({ songs, onPlaySong }: SongListProps) => {
-const {addToPlaylist,playSongs,selectedSong}=useAuth()
+const SongList = ({ songs }: SongListProps) => {
+const {addToPlaylist,playSongs,selectedSong,user}=useAuth()
+   const [openDialog, setOpenDialog] = useState(false);
+   const [deleteId,setDeleteId]=useState<string|number|null>(null)
+
+    const handleDelete = async (id:string|number|null) => {
+    try {
+      alert(id)
+      // setLoading(true);
+      // simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      console.log("Album deleted:", id);
+      setOpenDialog(false);
+    } catch (err) {
+      console.error("Delete failed", err);
+    } finally {
+      // setLoading(false);
+    }
+  };
 
   return (
     <Card className="rounded-xl shadow-md border border-border/50 bg-white dark:bg-transparent">
@@ -47,6 +66,7 @@ const {addToPlaylist,playSongs,selectedSong}=useAuth()
               {/* <span className="text-sm text-muted-foreground">
                 {song?.duration}
               </span> */}
+           
               <Button
                 size="icon"
                 variant="ghost"
@@ -63,10 +83,29 @@ const {addToPlaylist,playSongs,selectedSong}=useAuth()
               >
                 <Play className="h-5 w-5" />
               </Button> 
+              {user?.role=="admin" && <Button
+                size="icon"
+                variant={"destructive"}
+                className="rounded-full cursor-pointer h-8 w-8"
+                onClick={() => {
+                  setDeleteId(song?.id)
+                  setOpenDialog(true)
+                }}
+                
+              >
+                <Trash className="h-5 w-5" />
+              </Button> }
+              
+             
             </div>
           </div>
         ))}
       </CardContent>
+      <ConfirmDeleteDialog
+       onConfirm={()=>handleDelete(deleteId)}
+       onOpenChange={setOpenDialog}
+       open={openDialog}
+      />
     </Card> 
   );
 };

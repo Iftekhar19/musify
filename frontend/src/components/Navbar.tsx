@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthProvider";
 import {
+  LogIn,
+  LogOut,
   Moon,
   PlayCircleIcon,
   Sun
@@ -61,8 +63,8 @@ const Navbar = () => {
             </DropdownMenuContent>
           </DropdownMenu> */}
           {
-            user?<Button onClick={signout} className="bg-red-700 cursor-pointer hover:bg-red-600 text-white  rounded-[10px] px-3 py-1 h-8">Log Out</Button>:
-         <Button onClick={()=>navigate(`/signin`)} className="cursor-pointer   rounded-xl px-3 py-1 h-8">Sign In</Button>
+            user?<Button onClick={signout} className="cursor-pointer   rounded-[10px] px-3 py-1 h-8"><LogOut/> Log Out</Button>:
+         <Button onClick={()=>navigate(`/signin`)} className="cursor-pointer   rounded-[10px] px-3 py-1 h-8"><LogIn />Sign In</Button>
          }
         </div>
       </div>

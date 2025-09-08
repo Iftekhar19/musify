@@ -55,7 +55,7 @@ export default function ResetPassword() {
   
    if(value)
    {
-    navigate('/dashboard')
+    navigate('/')
    }
    
   },[])

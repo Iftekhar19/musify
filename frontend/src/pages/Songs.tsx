@@ -8,7 +8,7 @@ const SongsPage = () => {
       <h2 className="text-2xl font-bold mb-4">All Songs</h2>
       <SongList
         songs={songs}
-        onPlaySong={(id: string | number) => console.log("Play song:", id)}
+        // onPlaySong={(id: string | number) => console.log("Play song:", id)}
       />
     </div>
   );

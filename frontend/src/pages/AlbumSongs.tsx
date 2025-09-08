@@ -3,15 +3,15 @@ import { useAuth } from "@/context/AuthProvider";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-interface Song {
-  id: string;
-  title: string;
-  description?: string;
-  thumbnail?:string,
-  duration?:string,
-  album_id:string,
-  auido:string
-}
+// interface Song {
+//   id: string;
+//   title: string;
+//   description?: string;
+//   thumbnail?:string,
+//   duration?:string,
+//   album_id:string,
+//   auido:string
+// }
 interface Album {
   
     id: string;
@@ -23,7 +23,7 @@ interface Album {
 
 const AlbumPage = () => {
   const params=useParams();
-    const [songs,setSongs]=useState<Song[]>([])
+    // const [songs,setSongs]=useState<Song[]>([])
   const [album,setAlbum]=useState<Album>({
     id: "",
     title: "",
@@ -40,7 +40,7 @@ useEffect(()=>
     try {
       const {data}=await axios.get(`http://localhost:8002/api/v1/album/${params.id}/songs`)
       setAlbum(data.album)
-      setSongs(data.songs)
+      // setSongs(data.songs)
       setAlbumSongs(data.songs)
     } catch (error) {
       console.log(error)

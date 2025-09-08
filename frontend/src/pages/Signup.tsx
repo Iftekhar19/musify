@@ -65,7 +65,7 @@ const Signup = () => {
   
    if(value)
    {
-    navigate('/dashboard')
+    navigate('/')
    }
    
   },[])

@@ -54,7 +54,7 @@ export default function ForgotPassword() {
     
      if(value)
      {
-      navigate('/dashboard')
+      navigate('/')
      }
      
     },[])
@@ -93,7 +93,7 @@ export default function ForgotPassword() {
                 />
 
                 {/* Submit Button */}
-                <Button type="submit" className="w-full" disabled={loading}>
+                <Button type="submit" className="w-full cursor-pointer" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
