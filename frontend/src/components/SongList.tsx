@@ -4,18 +4,11 @@ import { useAuth } from "@/context/AuthProvider";
 import { Heart, Music, Play, Trash } from "lucide-react";
 import ConfirmDeleteDialog from "./DeleteDialog";
 import { useState } from "react";
-interface Song {
-  id: string | number;
-  title: string;
-  description: string;
-  thumbnail: string;
-  audio: string;
-  album_id: string;
-  created_at: string;
-}
+import type { Songs } from "@/types/AllTypes";
+
 
 interface SongListProps {
-  songs: Song[]|null;
+  songs: Songs[]|null;
   // onPlaySong?: (songId: string|number) => void;
 }
 
@@ -23,7 +16,7 @@ const SongList = ({ songs }: SongListProps) => {
 const {addToPlaylist,playSongs,selectedSong,user}=useAuth()
    const [openDialog, setOpenDialog] = useState(false);
    const [deleteId,setDeleteId]=useState<string|number|null>(null)
-
+   
     const handleDelete = async (id:string|number|null) => {
     try {
       alert(id)

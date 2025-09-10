@@ -29,6 +29,7 @@ import { useAuth } from "@/context/AuthProvider";
 import { toast } from "sonner";
 import { albumSchema } from "@/validationSchema/Schemas";
 import type { categoryStructure } from "@/types/AllTypes";
+import { useNavigate } from "react-router-dom";
 // interface categoryStructure{
 //   id:number|string;
 //   description:number|string|null;
@@ -41,9 +42,9 @@ type AlbumFormValues = z.infer<typeof albumSchema>;
 
 const AddAlbum = () => {
   const [loading, setLoading] = useState<boolean>(false);
-  const [categories,setCategories]=useState<categoryStructure[]>([]);
-  const {user}=useAuth()
-
+  // const [categories,setCategories]=useState<categoryStructure[]>([]);
+  const {user,categories}=useAuth()
+ const navigate=useNavigate();
   const form = useForm<AlbumFormValues>({
     resolver: zodResolver(albumSchema),
     defaultValues: {
@@ -97,26 +98,31 @@ const AddAlbum = () => {
     }
   };
 
-  useEffect(()=>
-  {
-    (async()=>
-    {
-   try {
-     const {data}=await  axios.get(`http://localhost:8001/api/v1/admin/categories`,{
-         headers:{
-           token:user?.token||""
-         },
-         withCredentials:true
-       })
-       setCategories(data.categories)
-   } catch (error) {
-    console.log(error)
-    toast.error("Unable to fetch categories",{position:"top-right"})
-   }
-    })()
+  // useEffect(()=>
+  // {
+  //   (async()=>
+  //   {
+  //  try {
+  //    const {data}=await  axios.get(`http://localhost:8002/api/v1/categories`)
+  //      setCategories(data.categories)
+  //  } catch (error) {
+  //   console.log(error)
+  //   toast.error("Unable to fetch categories",{position:"top-right"})
+  //  }
+  //   })()
 
-  },[])
-
+  // },[])
+   useEffect(()=>
+   {
+     if(!user)navigate(-1)
+     if(user && user?.role=="user") navigate(-1)
+     // if(user && user.role!=="admin")
+     // {
+     //   navigate(-1)
+     // }
+     
+ 
+   },[])
   return (
     <div className="h-full w-full flex justify-center items-center py-4 px-2">
       <div className="max-w-[500px] w-full">

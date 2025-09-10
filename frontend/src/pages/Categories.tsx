@@ -27,6 +27,8 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthProvider";
 import ConfirmDeleteDialog from "@/components/DeleteDialog";
 import { toast } from "sonner";
+import type { categoryStructure } from "@/types/AllTypes";
+import { useNavigate } from "react-router-dom";
 
 interface Category {
   id: number;
@@ -51,37 +53,29 @@ const categorySchema = z.object({
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 const CategoryTable = () => {
-  const { user } = useAuth();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(
+  const { user,categories } = useAuth();
+  // const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<categoryStructure|null>(
     null
   );
   const [open, setOpen] = useState<boolean>(false);
   const [open2, setOpen2] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
-
+ const navigate=useNavigate()
   // ✅ Fetch categories
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const { data } = await axios.get(
-          "http://localhost:8001/api/v1/admin/categories",
-          {
-            withCredentials: true,
-            headers: {
-              token: user?.token,
-            },
-          }
-        );
-        // const data = await res.json();
-        setCategories(data.categories);
-      } catch (error) {
-        // console.log(error?.message)
-        console.error(error);
-      }
-    }
-    fetchCategories();
-  }, []);
+  // useEffect(() => {
+  //   async function fetchCategories() {
+  //     try {
+  //       const { data } = await axios.get("http://localhost:8002/api/v1/categories",);
+  //       // const data = await res.json();
+  //       setCategories(data.categories);
+  //     } catch (error) {
+  //       // console.log(error?.message)
+  //       console.error(error);
+  //     }
+  //   }
+  //   fetchCategories();
+  // }, []);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -92,11 +86,13 @@ const CategoryTable = () => {
     },
   });
 
-  const handleEdit = (cat: Category) => {
+  const handleEdit = (cat: categoryStructure) => {
     setSelectedCategory(cat);
     form.reset({
-      title: cat.title,
-      description: cat.description || "",
+      title: cat.title||undefined,
+      description: typeof cat.description === "number"
+        ? String(cat.description)
+        : cat.description || undefined,
       thumbnail: null,
     });
     setOpen(true);
@@ -131,13 +127,13 @@ const CategoryTable = () => {
           withCredentials: true,
         }
       );
-      setCategories((prev) =>
-        prev.map((cat) =>
-          cat.id === selectedCategory.id
-            ? { ...cat, ...values, thumbnail: data.result?.thumbnail || "" }
-            : cat
-        )
-      );
+      // setCategories((prev) =>
+      //   prev.map((cat) =>
+      //     cat.id === selectedCategory.id
+      //       ? { ...cat, ...values, thumbnail: data.result?.thumbnail || "" }
+      //       : cat
+      //   )
+      // );
       toast.success("Updated successfully", { position: "top-right" });
     } catch (error) {
       console.error("Error updating category:", error);
@@ -168,6 +164,11 @@ const CategoryTable = () => {
       // setLoading(false);
     }
   };
+    useEffect(()=>
+    {
+      if(!user)navigate(-1)
+      if(user && user?.role=="user") navigate(-1)
+    },[])
 
   return (
     <div className="w-full px-2">
@@ -192,7 +193,7 @@ const CategoryTable = () => {
                   {cat.thumbnail ? (
                     <img
                       src={cat.thumbnail}
-                      alt={cat.title}
+                      alt={cat.title||""}
                       className="h-12 w-12 rounded-md object-cover"
                     />
                   ) : (
@@ -202,7 +203,7 @@ const CategoryTable = () => {
                 <TableCell className="font-medium">{cat.title}</TableCell>
                 <TableCell>{cat.description || "NA"}</TableCell>
                 <TableCell>
-                  {new Date(cat.created_at).toLocaleDateString()}
+                  {new Date(cat.created_at||"").toLocaleDateString()}
                 </TableCell>
                 <TableCell className="flex gap-2 justify-end">
                   <Button

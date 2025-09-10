@@ -25,20 +25,21 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/context/AuthProvider";
-import type { categoryStructure } from "@/types/AllTypes";
 import { songSchema } from "@/validationSchema/Schemas";
 import axios from "axios";
 import { Loader2, Music } from "lucide-react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 
 type SongFormValues = z.infer<typeof songSchema>;
 
 const AddSong = () => {
   const [loading, setLoading] = useState(false);
-  const [categories,setCategories]=useState<categoryStructure[]>([]);
-  const {user,albums}=useAuth()
+  const [catId,setCatId]=useState<string|number|null>(null)
 
+  const {user,albums,categories}=useAuth()
+  const navigate=useNavigate();
   const form = useForm<SongFormValues>({
     resolver: zodResolver(songSchema),
     defaultValues: {
@@ -49,27 +50,6 @@ const AddSong = () => {
     },
   });
 
-  // ✅ Fetch albums & categories from backend
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const {data} = await axios.get(`http://localhost:8001/api/v1/admin/categories`,{
-          headers:{
-            token:user?.token||""
-          },
-          withCredentials:true
-        })
-
-
-        setCategories(data.categories);
-      } catch (err) {
-        console.error("Error fetching albums/categories", err);
-        toast.error('Error fetching categories',{position:"top-right"})
-      }
-    }
-    fetchData();
-  }, []);
-
   const onSubmit = async (values: SongFormValues) => {
     setLoading(true);
     try {
@@ -79,8 +59,12 @@ const AddSong = () => {
         title: values.title,
         description: values.description,
         album: Number(values.album_id),
-        category: Number(values.category_id),
+        category: Number(catId),
       };
+      // console.log(songData)
+      // console.log(values.audio[0])
+      // setLoading(false);
+      // return;
 
       formData.append("data", JSON.stringify(songData));
 
@@ -106,7 +90,7 @@ const AddSong = () => {
       //   method: "POST",
       //   body: formData,
       // });
-      const {data}=await axios.post(`http://localhost:8001/api/v1/admin/upload/song`,formData,{
+      await axios.post(`http://localhost:8001/api/v1/admin/upload/song`,formData,{
         headers:{
           token:user?.token||""
         },
@@ -124,7 +108,21 @@ const AddSong = () => {
       setLoading(false);
     }
   };
-
+  const filterCategory=(id:string|number)=>
+  {
+     const al=albums?.find((a)=>a.id==id)
+     const cate=categories.find((c)=>c.title==al?.category)
+     if(cate)
+     {
+      setCatId(cate.id)
+      // alert(cate.id)
+     }
+  }
+  useEffect(()=>
+  {
+    if(!user)navigate(-1)
+    if(user && user?.role=="user") navigate(-1)
+  },[])
   return (
     <div className="h-full w-full flex justify-center items-center px-2 py-4 mt-2">
       <div className="max-w-[600px] w-full">
@@ -185,7 +183,12 @@ const AddSong = () => {
                       <FormLabel>Album</FormLabel>
                       <FormControl>
                         <Select
-                          onValueChange={field.onChange}
+                          onValueChange={(value)=>
+                          {
+                             filterCategory(value)
+                             field.onChange(value)
+                          }
+                          }
                           defaultValue={field.value}
                         >
                           <SelectTrigger className="w-full">
@@ -220,7 +223,7 @@ const AddSong = () => {
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                         >
-                          <SelectTrigger className="w-full">
+                          <SelectTrigger className="w-full" disabled>
                             <SelectValue placeholder="Select a category" />
                           </SelectTrigger>
                           <SelectContent>

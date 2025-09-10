@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -20,13 +20,14 @@ import axios from "axios";
 import { useAuth } from "@/context/AuthProvider";
 import { toast } from "sonner";
 import { categorySchema } from "@/validationSchema/Schemas";
+import { useNavigate } from "react-router-dom";
 
 type CategoryFormValues = z.infer<typeof categorySchema>;
 
 const AddCategory = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
-
+ const navigate=useNavigate()
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
     defaultValues: {
@@ -76,7 +77,17 @@ const AddCategory = () => {
       setLoading(false);
     }
   };
-
+    useEffect(()=>
+    {
+      if(!user)navigate(-1)
+      if(user && user?.role=="user") navigate(-1)
+      // if(user && user.role!=="admin")
+      // {
+      //   navigate(-1)
+      // }
+      
+  
+    },[])
   return (
     <div className="h-full w-full flex justify-center items-center py-4 px-2">
       <div className="max-w-[500px] w-full">

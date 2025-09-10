@@ -1,4 +1,5 @@
 // src/context/AuthContext.tsx
+import  type { categoryStructure,  Albums,  localStorageUser,  Songs,  User } from "@/types/AllTypes";
 import type { ApiResponse } from "@/types/ApiResponse";
 import axios, { AxiosError } from "axios";
 import type { Dispatch, ReactNode, SetStateAction } from "react";
@@ -13,52 +14,53 @@ import { toast } from "sonner";
 import { useLocalStorage } from "usehooks-ts";
 const song_server = "http://localhost:8002/api/v1";
 const user_server = "http://localhost:8000/api/v1/users";
-interface User {
-  _id: string;
-  email: string;
-  name?: string;
-  phone?: string;
-  playlist: string[] | number[];
-  role: string;
-  isVerified: boolean;
-  token:string|null
-}
+// interface User {
+//   _id: string;
+//   email: string;
+//   name?: string;
+//   phone?: string;
+//   playlist: string[] | number[];
+//   role: string;
+//   isVerified: boolean;
+//   token:string|null
+// }
 
 // interface UserSignIn {
 //   email: string;
 //   password: string;
 // }
-export interface localStorageUser {
-  _id?: string;
-  name: string;
-  email: string;
-  password?: string;
-  phone: string;
-  playlist: number[] | string[];
-  role: "user" | "admin";
-  isVerified: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-  __v?: number;
-  token:string|null
-}
-interface Songs {
-  id: string | number;
-  title: string;
-  description: string;
-  thumbnail: string;
-  audio: string;
-  album_id: string;
-  created_at: string;
-}
-export interface Albums {
-  id: string | number;
-  title: string;
-  description: string;
-  thumbnail: string;
-
-  created_at: string;
-}
+// export interface localStorageUser {
+//   _id?: string;
+//   name: string;
+//   email: string;
+//   password?: string;
+//   phone: string;
+//   playlist: number[] | string[];
+//   role: "user" | "admin";
+//   isVerified: boolean;
+//   createdAt?: string;
+//   updatedAt?: string;
+//   __v?: number;
+//   token:string|null
+// }
+// interface Songs {
+//   id: string | number;
+//   title: string;
+//   description: string;
+//   thumbnail: string;
+//   audio: string;
+//   album_id: string;
+//   created_at: string;
+//   category:string;
+// }
+// export interface Albums {
+//   id: string | number;
+//   title: string;
+//   description: string;
+//   thumbnail: string;
+//   category:string;
+//   created_at: string;
+// }
 
 interface AuthContextType {
   user: User | null;
@@ -90,6 +92,8 @@ interface AuthContextType {
   playAlbumSongs: (idx: string | number) => void;
   playSongs: (idx: string | number) => void;
   playPlaylistSongs: (idx: string | number) => void;
+  categories:categoryStructure[];
+  pushCategory:(cat:categoryStructure)=>void
 }
 
 // Create Context
@@ -124,6 +128,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isPlayingFromPlaylist, setIsPlayingFromPlaylist] =
     useState<boolean>(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [categories,setCategories]=useState<categoryStructure[]>([])
   const signout = async (): Promise<void> => {
     try {
       await axios.post(
@@ -172,6 +177,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log(error);
     }
   }, [value]);
+  const fetchCategories = useCallback(async () => {
+    try {
+      const { data } = await axios.get(`http://localhost:8002/api/v1/categories`);
+      // console.log(data);
+      setCategories(data?.categories);
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
   const fetchPRofile = useCallback(async () => {
     try {
       const { data } = await axios.get(`${user_server}/profile`, {
@@ -323,6 +337,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsPlayingFromQueue(true);
      setIsPlaying(true)
   };
+  const pushCategory=(cat:categoryStructure)=>{
+    setCategories(prev=>[...prev,cat])
+  }
   useEffect(() => {
     (async () => {
       try {
@@ -340,6 +357,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         // console.log("fetched Playlist called");
         await fetchPlayList();
+        await fetchCategories()
       } catch (error) {
         toast.error("Unable to load playList");
         console.log(error);
@@ -408,7 +426,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         playSongs,
         playPlaylistSongs,
         isMobile,
-        albumSongs
+        albumSongs,
+        categories,
+        pushCategory
+        
       }}
     >
       {children}

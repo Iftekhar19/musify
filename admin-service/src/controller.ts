@@ -388,20 +388,4 @@ let cloud;
     });
   }
 );
-export const getCategories = asyncHandler(
-  async (req: AuthenticatedRequest, res: Response) => {
-   console.log( req?.user?.role)
-    if (req.user?.role !== "admin") {
-      return res.status(403).json({
-        message: "Unauthorize user",
-        success: false,
-      });
-    }
-    const result=await sql`SELECT * FROM categories`;
-    return res.status(200).json({
-      message:"Categories fetched successfully",
-      success:true,
-      categories:result
-    })
-  }
-);
+

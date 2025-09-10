@@ -41,5 +41,5 @@ export const songSchema = z.object({
     message: "Audio file is required",
   }),
   album_id: z.string().min(1, "Album is required"),
-  category_id: z.string().min(1, "Category is required"),
+  category_id: z.string( "Category is required").optional(),
 });

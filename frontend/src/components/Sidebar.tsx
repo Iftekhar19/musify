@@ -35,9 +35,10 @@ const Sidebar = () => {
   return (
     <aside className="w-[300px] h-full border-r bg-background flex flex-col">
       {/* App Name / Logo */}
-      <div className="h-14 flex items-center px-6 border-b">
-        <h1 className="text-xl font-bold">Musify</h1>
-      </div>
+     {user&& <div className="h-14 flex items-center px-6 border-b gap-2">
+        <h1 className="text-[20px] font-bold">Welcome </h1>
+        <p className="text-[18px] font-semibold">{user.name}</p>
+      </div>}
 
       {/* Scrollable Menu */}
       <nav className="flex-1 overflow-y-auto px-0 py-4">

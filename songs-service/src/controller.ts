@@ -16,7 +16,17 @@ export const getSongs = asyncHandler(async (req: Request, res: Response) => {
       });
     }
   }
-  songs = await sql`SELECT * FROM songs`;
+  // songs = await sql`SELECT * FROM songs`;
+  songs = await sql`SELECT 
+    s.id AS id,
+    s.title AS title,
+    s.thumbnail AS thumbnail,
+     s.audio AS audio,
+  s.description AS description,
+  s.album_id AS album_id,
+    c.title AS category
+FROM songs s
+JOIN categories c ON s.category_id = c.id`;
   if (redisClient.isReady) {
     await redisClient.set("songs", JSON.stringify(songs), {
       EX: CACHE_EXPIRY,
@@ -44,7 +54,16 @@ export const getAllAlbums = asyncHandler(
         });
       }
     }
-    albums = await sql`SELECT * FROM albums`;
+    // albums = await sql`SELECT * FROM albums`;
+    albums = await sql`SELECT 
+    al.id AS id,
+    al.title AS title,
+    al.thumbnail AS thumbnail,
+  al.description AS description,
+  al.created_at AS created_at,
+    c.title AS category
+FROM albums al
+JOIN categories c ON al.category_id = c.id`;
     if (redisClient.isReady) {
       await redisClient.set("albums", JSON.stringify(albums), {
         EX: CACHE_EXPIRY,
@@ -123,12 +142,11 @@ export const song = asyncHandler(async (req: Request, res: Response) => {
       success: false,
     });
   }
-  if(redisClient.isReady)
-  {
-    await redisClient.set(`song_${id}`,JSON.stringify(song),{
-      EX:CACHE_EXPIRY
-    })
-    console.log('cache miss')
+  if (redisClient.isReady) {
+    await redisClient.set(`song_${id}`, JSON.stringify(song), {
+      EX: CACHE_EXPIRY,
+    });
+    console.log("cache miss");
   }
 
   return res.status(200).json({
@@ -137,33 +155,42 @@ export const song = asyncHandler(async (req: Request, res: Response) => {
     song: song[0],
   });
 });
-export const getPlayList=asyncHandler(async (req:Request,res:Response)=> {
-  const {idArray}=req.body;
+export const getPlayList = asyncHandler(async (req: Request, res: Response) => {
+  const { idArray } = req.body;
   // console.log(typeof idArray)
-  if(!Array.isArray(idArray))
-  {
+  if (!Array.isArray(idArray)) {
     return res.status(400).json({
-      message:"Invalid ids",
-      success:false
-    })
+      message: "Invalid ids",
+      success: false,
+    });
   }
-  if(idArray.length===0)
-  {
-      return res.status(200).json({
-      message:"No ids to fetch playlist",
-      success:true,
-      playList:[]
-    })
+  if (idArray.length === 0) {
+    return res.status(200).json({
+      message: "No ids to fetch playlist",
+      success: true,
+      playList: [],
+    });
   }
-const rows = await sql`
+  const rows = await sql`
     SELECT *
     FROM songs
     WHERE id = ANY(${idArray})
   `;
- 
+
   return res.status(200).json({
-    message:"fetched successfully",
-    success:true,
-    playList:rows
-  })
-})
+    message: "fetched successfully",
+    success: true,
+    playList: rows,
+  });
+});
+export const getCategories = asyncHandler(
+  async (req: Request, res: Response) => {
+
+    const result=await sql`SELECT * FROM categories`;
+    return res.status(200).json({
+      message:"Categories fetched successfully",
+      success:true,
+      categories:result
+    })
+  }
+);

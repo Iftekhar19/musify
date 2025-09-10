@@ -20,6 +20,7 @@ import  AddAlbum from "./pages/AddAlbum.tsx";
 import  AddCategory from "./pages/AddCategory.tsx";
 import  AddSong from "./pages/AddSong.tsx";
 import  Categories from "./pages/Categories.tsx";
+import CategorizeAlbum from "./pages/CategorizeAlbum.tsx";
 
 const router = createBrowserRouter([
   // {
@@ -69,8 +70,12 @@ const router = createBrowserRouter([
         element: <Albums />,
       },
       {
-        path: "/albums/:id",
+        path: "/album/:id",
         element: <AlbumSongs />,
+      },
+      {
+        path: "/albums/:category",
+        element: <CategorizeAlbum />,
       },
       {
         path: "/songs",
